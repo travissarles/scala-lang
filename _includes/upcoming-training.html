@@ -3,7 +3,7 @@
   <div class="heading-line">
     <h2><span>Upcoming Training</span></h2>
   </div>
-  <div class="training-items-list">
+  <div class="training-items-list" id="trainingspane">
     {% assign upcomingTrainings = '' | split: ',' %}
     {% capture now %}{{site.time | date: '%s' | plus: 0}}{% endcapture %}
     {% for training in site.trainings %}

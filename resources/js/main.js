@@ -222,7 +222,9 @@ $(document).ready(function(){
   // Stop early if the element does not exist, i.e., we're not on the front page
   if ($('#eventspane').length == 0)
     return;
-  var isFrontPage = $('.events').length != 0;
+
+  var isFrontPage = window.location.path == '/';
+
   var additionalClass =
     isFrontPage ? 'event-item-front-page' : 'event-item-event-page';
 
@@ -324,7 +326,9 @@ $(document).ready(function(){
   // we're not on the front page nor on the Trainings page
   if ($('#trainingspane').length == 0)
     return;
-  var isFrontPage = $('.training').length != 0;
+
+  var isFrontPage = window.location.path == '/';
+
   var additionalClass =
     isFrontPage ? 'training-item-front-page' : 'traning-item-training-page';
 
@@ -335,24 +339,24 @@ $(document).ready(function(){
   }
 
   var scalaLangTrainings = [
-  {% for training in site.categories.training %}
-  {% if training.date >= site.time %}{% comment %} No point in including outdated training sessions {% endcomment %}
-    {
-      title: "{{ training.title }}",
-      description: "{{ training.description }}",
-      sessions: [
-        {
-          where: "{{ training.where }}",
-          when: "{{ training.when }}",
-          trainers: "{{ training.trainers }}",
-          organizer: "{{ training.organizer }}",
-          url: "{{ training.link-out }}",
-          status: "{{ training.status }}"
-        }
-      ]
-    },
-  {% endif %}
-  {% endfor%}
+  // {% for training in site.categories.training %}
+  // {% if training.date >= site.time %}{% comment %} No point in including outdated training sessions {% endcomment %}
+  //   {
+  //     title: "{{ training.title }}",
+  //     description: "{{ training.description }}",
+  //     sessions: [
+  //       {
+  //         where: "{{ training.where }}",
+  //         when: "{{ training.when }}",
+  //         trainers: "{{ training.trainers }}",
+  //         organizer: "{{ training.organizer }}",
+  //         url: "{{ training.link-out }}",
+  //         status: "{{ training.status }}"
+  //       }
+  //     ]
+  //   },
+  // {% endif %}
+  // {% endfor%}
   ];
 
   function flattenSessions(trainings) {
@@ -390,21 +394,44 @@ $(document).ready(function(){
       var month = monthNames[trainingDate.getMonth()];
       var day = trainingDate.getDate();
       var year = trainingDate.getFullYear();
-      var thisContent =
-        '<a class="training-item-wrap '+additionalClass+'" href="'+training.url+'">' +
-          '<div class="training-item">' +
-            '<div class="training-title">'+training.title+'</div>' +
-            '<div class="training-date">' +
-               '<div class="date"><div class="month">'+month+'</div><div class="day">'+day+'</div></div><div class="year">'+year+'</div>' +
-            '</div>'+
-            '<div class="training-float-right">' +
-              '<div class="training-location">'+training.where+'</div>' +
-              (training.trainers == null ? '' : ('<div class="training-trainers-name"> By '+training.trainers+'</div>')) +
-              '<div class="training-organizer">'+training.organizer+'</div>' +
-            '</div>' +
-          '</div>' +
-        '</a>';
-      $("#trainingspane").append(thisContent);
+
+      if(isFrontPage) {
+        var thisContent =
+          '<a href="' + training.url + `" class="training-item card">
+              <span class="calendar">
+                <span>
+                  ` + month + `
+                </span>
+                <span>` + day + `</span>
+              </span>
+              <div class="card-text">
+                <h4>` + training.title + `</h4>
+                <ul>
+                  <li class="online-courses-price">`+ training.where +`</li>
+                </ul>
+              </div>
+            </a> `;
+
+        $("#trainingspane").append(thisContent);
+      } else {
+        var thisConentLong = `<a href="` + training.url + `" class="training-item">
+
+                <div class="calendar">
+                  <span>
+            ` + month + `</span>
+                  <span>`+ day +`</span>
+                </div>
+
+              <div class="training-text">
+                <h4>` + training.title + `</h4>
+                <p></p>
+
+                  <p>`+ training.where +`</p>
+
+              </div>
+            </a>`;
+        $("#trainingspagepane").append(thisContentLong);
+      }
     }
   }
 
@@ -424,7 +451,7 @@ $(document).ready(function(){
   }
 
   $.ajax({
-    url: "{{ site.baseurl }}/resources/php/typesafe-feed-trainings.php",
+    url: "{{ site.baseurl }}/resources/json/events.json",
     type: "GET",
     dataType: "json",
     success: onTrainingsAjaxSuccess,
